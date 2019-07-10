@@ -68,5 +68,7 @@ export default {
   color #2c3e50
   margin-top 60px
 .button-container
-  background red
+  & > button
+    margin 0.5rem
+    padding 0.5rem
 </style>
