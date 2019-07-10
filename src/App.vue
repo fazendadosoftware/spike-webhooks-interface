@@ -1,7 +1,12 @@
 <template>
   <div id="app">
-    <div>{{baseUrl}} {{workspace}}</div>
-    <button @click="doQuery">Make Query</button>
+    <div>{{baseUrl}}</div>
+    <div>{{workspace}}</div>
+    <div class="button-container">
+      <button :disabled="requestOngoing" @click="doQuery()">Query Webhooks API (GET)</button>
+      <button :disabled="requestOngoing" @click="doQuery('POST')">Query Webhooks API (POST)</button>
+    </div>
+    <pre>{{response}}</pre>
   </div>
 </template>
 
@@ -12,19 +17,32 @@ export default {
   data () {
     return {
       baseUrl: '',
-      workspace: ''
+      workspace: '',
+      response: {},
+      requestOngoing: false
     }
   },
   methods: {
-    doQuery () {
-      console.log(`${new Date().toISOString()} doing query...`)
-      this.$lx.executeParentOriginXHR('POST', `${this.baseUrl}/services/webhooks/v1/subscriptions`)
+    doQuery (method = 'GET') {
+      if (this.requestOngoing) return
+      this.requestOngoing = true
+      this.$lx.executeParentOriginXHR(method, `${this.baseUrl}/services/webhooks/v1/subscriptions`)
         .then(res => {
+          this.response = res
           console.log('RES', res)
+          this.requestOngoing = false
         })
         .catch(err => {
+          this.request = err
           console.error('err', err)
+          this.requestOngoing = false
         })
+    }
+  },
+  watch: {
+    requestOngoing (state) {
+      if (state) this.$lx.showSpinner()
+      else this.$lx.hideSpinner()
     }
   },
   created () {
@@ -49,4 +67,6 @@ export default {
   text-align center
   color #2c3e50
   margin-top 60px
+.button-container
+  background red
 </style>
